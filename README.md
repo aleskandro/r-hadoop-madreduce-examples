@@ -1,5 +1,12 @@
 ## R & Hadoop for data analysis with MapReduce
 
+### Dependencies
+
+* Hadoop
+* devtools (R)
+* klmr/modules (R)
+* roxygen2 (R)
+* linux-coreutils: (cat, less, sort... )
 
 ## TCPDump Logs
 
@@ -39,11 +46,6 @@ hdfs dfs -rm log.log will delete the log directory if you need to restart the ma
 
 WARNING: Verify the path of the hadoop-streaming-*.jar file
 
-### Dependencies
 
-* Hadoop
-* devtools (R)
-* klmr/modules (R)
-* roxygen2 (R)
-* linux-coreutils: (cat, less, sort... )
+## Using rhadoop
 
