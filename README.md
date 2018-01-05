@@ -16,7 +16,7 @@ To run the code without hadoop:
 
 #### Hadoop (and Docker)
 
-    The code was tested in a Docker container derived from 'sequenceiq/hadoop-docker' hub.docker.com, using a single node hadoop server.
+The code was tested in a Docker container derived from 'sequenceiq/hadoop-docker' hub.docker.com, using a single node hadoop server.
 
 To build and run the container (take care of permissions and SELinux):
 ```
