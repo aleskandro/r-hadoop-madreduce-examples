@@ -45,8 +45,9 @@ In the container, to run the analyzer:
 
 hdfs dfs -rm log.log will delete the log directory if you need to restart the map-reduce as above.
 
-WARNING: Verify the path of the hadoop-streaming-*.jar file
+WARNING: Verify the path of the hadoop-streaming-\*.jar file 
 
+`src/streaming/script.sh` provide a simple way to be ran inside the docker container avoiding the handwritten commands above
 
 ## Using rhadoop
 
