@@ -6,8 +6,8 @@ modules::import('utils', attach = TRUE)
 actualTimestamp <<- NULL
 packetsCount    <<- 0
 
-# Mapper function (the fun parameter must be a 2 arguments function (es. cat or keyval from rmr2))
-map <- function(line, fun, suffix = "") {
+# Map function
+map <- function(line) {
     line  <- strip(line)
     elems <- splitString(line, "[[:space:]]+")
 
@@ -27,7 +27,7 @@ map <- function(line, fun, suffix = "") {
         actualTimestamp <<- timestamp
     }
     if (toSecs(timestamp) - toSecs(actualTimestamp) >= 300) {
-        fun("timestamp\t", paste(paste(actualTimestamp, collapse = ":"), packetsCount, suffix))
+        cat("timestamp\t", paste(paste(actualTimestamp, collapse = ":"), packetsCount, "\n"))
         # Reset the counter and set the new start timestamp
         packetsCount    <<- 0
         actualTimestamp <<- timestamp
@@ -35,13 +35,13 @@ map <- function(line, fun, suffix = "") {
         packetsCount <<- packetsCount + 1
     }
 
-    fun("packet\t", paste(src, dst, pckLength, suffix))
+    cat("packet\t", paste(src, dst, pckLength, "\n"))
 }
 
 main <- function() {
     con <- file("stdin", open = "r")
     while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0)
-        map(line, cat, "\n")
+        map(line)
 }
 
 if (is.null(modules::module_name()))
