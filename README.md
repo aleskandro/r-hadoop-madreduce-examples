@@ -49,5 +49,16 @@ WARNING: Verify the path of the hadoop-streaming-\*.jar file
 
 `src/streaming/script.sh` provide a simple way to be ran inside the docker container avoiding the handwritten commands above
 
-## Using rhadoop
+## Using RHadoop
 
+```
+    $ docker build -t rhadoop .
+    $ docker run -v /ABSPATH/TO/THIS/REPO/src/:/code -it rhadoop /etc/bootstrap.sh -bash
+    # cd src/rhadoop
+    # hdfs dfs -copyFromLocal ../../samples/tcpdump.log 
+    # ./rhadoop.r
+```
+
+## Using RHipe
+
+Not working on Hadoop 2.7: https://github.com/delta-rho/RHIPE/issues/45
