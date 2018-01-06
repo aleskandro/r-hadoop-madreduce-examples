@@ -36,6 +36,7 @@ In the container, to run the analyzer:
     # cd /code/
     # hdfs dfs -copyFromLocal $myTcpDumpLogFile $myTcpDumpLogFile
     # hadoop jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-2.7.0.jar \
+        -file ./utils.r
         -file ./mapper.r    -mapper ./mapper.r \
         -file ./reducer.r   -reducer ./reducer.r \
         -input $MyTCPDumpLogFile -output log.log ' 

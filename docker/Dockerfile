@@ -21,18 +21,23 @@ RUN R -e "devtools::install_github(c('RevolutionAnalytics/rmr2/pkg', 'Revolution
 
 #### RHipe
 
-ENV HADOOP_BIN=/usr/local/hadoop/bin/hadoop 
+ENV HADOOP_BIN=/usr/local/hadoop/bin/
 RUN R -e 'install.packages("datadr", repos="https://cran.stat.unipd.it/")'
-RUN yum -y install ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/mrdocs:/protobuf-rpm/CentOS_CentOS-6/x86_64/libprotobuf7-2.4.1-6.2.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/mrdocs:/protobuf-rpm/CentOS_CentOS-6/x86_64/libprotoc7-2.4.1-6.2.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/mrdocs:/protobuf-rpm/CentOS_CentOS-6/x86_64/protobuf-devel-2.4.1-6.2.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/mrdocs:/protobuf-rpm/CentOS_CentOS-6/x86_64/protobuf-java-2.4.1-6.2.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/mrdocs:/protobuf-rpm/CentOS_CentOS-6/x86_64/libprotobuf-lite7-2.4.1-6.2.x86_64.rpm
 
-RUN curl http://ml.stat.purdue.edu/rhipebin/archive/Rhipe_0.72.tar.gz > /tmp/rhipe.tar.gz
+RUN yum install -y ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-compiler-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-debuginfo-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-devel-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-devel-2.5.0-16.1.x86_64.rpm 
+
+RUN curl http://ml.stat.purdue.edu/rhipebin/Rhipe_0.75.2_hadoop-2.tar.gz > /tmp/rhipe.tar.gz
 RUN R CMD INSTALL /tmp/rhipe.tar.gz
 RUN rm -rf /tmp/rhipe.tar.gz
+
+RUN R -e 'install.packages("testthat", repos="https://cran.stat.unipd.it/")'
 
 #### Final environment
 
 RUN mkdir /code
 WORKDIR /code
 ENV PATH="/usr/local/hadoop/bin:${PATH}"
+#RUN echo 'export HADOOP_LIBS=$(hadoop classpath | tr -d "*")' >> /etc/bootstrap.sh
+ENV HADOOP_LIBS=/usr/local/hadoop/etc/hadoop/:/usr/local/hadoop/share/hadoop/common/lib/:/usr/local/hadoop/share/hadoop/common/:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/:/usr/local/hadoop/share/hadoop/hdfs/:/usr/local/hadoop/share/hadoop/yarn/lib/:/usr/local/hadoop/share/hadoop/yarn/:/usr/local/hadoop/share/hadoop/mapreduce/lib/:/usr/local/hadoop/share/hadoop/mapreduce/:/usr/local/hadoop/contrib/capacity-scheduler/
 
 CMD [ "/etc/bootstrap.sh", "-d" ]
