@@ -7,8 +7,8 @@ library(rmr2)
 library(rhdfs)
 library(parallel)
 library(ggplot2)
-### Useful functions
 
+### Useful functions
 toSecs <- function(ts) {
     ts <- as.numeric(ts)
     return (ts[1] * 3600 + ts[2] * 60 + ts[3])
@@ -18,7 +18,7 @@ toSecs <- function(ts) {
 strip   <- function(str)  gsub("^\\s+|\\s+$", "", str)
 
 # split line into a list
-splitString <- function(line, str) unlist(strsplit(line, str))
+splitString <- function(line, str = " ") unlist(strsplit(line, str))
 
 # return the IP in a string formatted as x.y.z.w.port
 getIp <- function(str) paste(splitString(str, "\\.")[1:4], collapse = ".")
@@ -41,7 +41,7 @@ mapPackets <- function(l) {
 
 mapTimestamps <- function(l) {
     # Timestamp
-    line <- strip(l)
+    line  <- strip(l)
     elems <- splitString(line, "[[:space:]]+")
     timestamp <- splitString(splitString(elems[1], "\\.")[1], ":")
 
@@ -55,7 +55,6 @@ mapTimestamps <- function(l) {
         # Reset the counter and set the new start timestamp
         packetsCount    <<- 0
         actualTimestamp <<- timestamp
-
         return(paste(paste(oldTimestamp, collapse = ":"), retPckCount))
     } else {
         packetsCount <<- packetsCount + 1
@@ -63,56 +62,53 @@ mapTimestamps <- function(l) {
     }
 }
 
-reducer <- function(k, vv) {
-    if (k == "packet") {
-        large  <- sum(as.integer(splitString(strip(vv), " ")[3]) > 512)
-        total  <- length(vv)
-        asList <- sapply(vv, function(l) { strsplit(l, " ") })
+reducePackets <- function(vv) {
+    large  <- sum(as.integer(splitString(strip(vv))[3]) > 512)
+    total  <- length(vv)
+    asList <- sapply(vv, strsplit, " ")
 
-        df     <- as.data.frame.matrix(do.call(rbind, asList))
-        colnames(df)  <- c("client", "server", "length")
+    df     <- as.data.frame.matrix(do.call(rbind, asList))
+    colnames(df)  <- c("client", "server", "length")
 
-        topTenClients <- aggregate(x = as.numeric(as.character(df$length)), FUN=sum, by=list(unique.values = df$client))
-        topTenServers <- aggregate(x = df$server, FUN=length, by=list(unique.values = df$server))
+    topTenClients <- aggregate(x = as.numeric(as.character(df$length)), FUN=sum, by=list(unique.values = df$client))
+    topTenServers <- aggregate(x = df$server, FUN=length, by=list(unique.values = df$server))
 
-        myList <- list(total = total, large = large, topTenClients = topTenClients, topTenServers = topTenServers)#,
+    myList <- list(total = total, large = large, topTenClients = topTenClients, topTenServers = topTenServers)
 
-        return(keyval("reduced", myList))
-    }
+    return(keyval("reduced", myList))
+}
 
-    if (k == "timestamp") {
-        asList <- sapply(vv, function(l) {strsplit(l, " ") })
-        df     <- as.data.frame.matrix(do.call(rbind, asList))
-        colnames(df)  <- c("datetime", "count")
-        return(keyval(k,list(timestamps=df)))
-    }
+reduceTimestamps <- function(vv) {
+    asList <- sapply(vv, strsplit, " ")
+    df     <- as.data.frame.matrix(do.call(rbind, asList))
+    colnames(df)  <- c("datetime", "count")
+    return(keyval("timestamps",list(timestamps=df)))
 }
 
 mapper <- function(k, l) {
-    myList <- unlist(strsplit(x = l, split = "\n"))
-    packets <- lapply(myList, function(line) { 
-        mapPackets(line)
-    })
+    myList  <- splitString(l, "\n")
+    packets <- lapply(myList, mapPackets)
     packetsCount    <<- 0
     actualTimestamp <<- NA
 
-    invisible(timestamps <- lapply(myList, function(line) {
-        mapTimestamps(line)
-    }))
+    timestamps <- lapply(myList, mapTimestamps)
     timestamps <- timestamps[!is.na(timestamps)]
-    invisible(timestamps <- keyval("timestamp", timestamps))
-    invisible(packets <- keyval("packet", packets))
-    keyval(c(packets$key, timestamps$key), c(packets$val, timestamps$val))
+    timestamps <- keyval("timestamp", timestamps)
+    packets    <- keyval("packet", packets)
+    return(keyval(c(packets$key, timestamps$key), c(packets$val, timestamps$val)))
 }
 
-hdfs.init()
+reducer <- function(k, vv) {
+    if (k == "packet") {
+        return(reducePackets(vv))
+    }
 
-job <- mapreduce(input="/user/root/tcpdump.log",
-                    input.format = 'text',
-                    map = mapper,
-                    reduce = reducer)
+    if (k == "timestamp") {
+        return(reduceTimestamps(vv))
+    }
+}
 
-# Print the statistics at the end
+# Printing/Plotting functions for the statistics at the end
 
 topTen <- function(x) {
     index <- with(x, order(-x))
@@ -122,24 +118,38 @@ topTen <- function(x) {
 printStats <- function(t) {
     totalPackets <- t$total
     largePackets <- t$large
-    pLargePackets = largePackets / totalPackets * 100
+    pLargePackets<- largePackets / totalPackets * 100
 
     cat("Total packets: ", totalPackets, " - Large packets: ", pLargePackets, " - Small packets: ", 100 - pLargePackets, "\n")
+
     cat("\nTop ten clients:\n")
-    print(topTen(t$topTenClients))
+    out <- topTen(t$topTenClients)
+    colnames(out) <- c("ClientIP", "Bytes sent")
+    print(out)
+
     cat("\nTop ten servers:\n")
-    print(topTen(t$topTenServers))
+    out <- topTen(t$topTenServers)
+    colnames(out) <- c("ServerIP", "Packets count")
+    print(out)
 }
 
+savePlot <- function(timestamps) {
+    # Putting time based output to a line chart and saving to pdf 
+    # (no gui available through the docker container provided)
+    thePlot <- ggplot(data=timestamps, aes(x=datetime, y=count, group=1)) +
+        geom_line() + geom_point() +
+        theme(axis.text.x = element_text(angle = 90, hjust = 1, size=5))
+
+    ggsave(filename="plot.pdf", plot=thePlot, width=10, height=5)
+}
+
+hdfs.init()
+job <- mapreduce(input= "/user/root/tcpdump.log",
+                    input.format = 'text',
+                    map    = mapper,
+                    reduce = reducer)
+
 output = from.dfs(job)
-
 printStats(output$val)
-# Putting time based output to a line chart and saving to pdf 
-# (no gui available through the docker container provided)
-timestamps <- output$val$timestamps
-thePlot <- ggplot(data=timestamps, aes(x=datetime, y=count, group=1)) +
-    geom_line() + geom_point() +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, size=5))
-
-ggsave(filename="plot.pdf", plot=thePlot, width=10, height=5)
+savePlot(output$val$timestamps)
 
