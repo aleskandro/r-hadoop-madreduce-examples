@@ -3,7 +3,6 @@
 modules::import('utils', attach = TRUE)
 
 # Global variables
-topTenClientsByServers <<- list()
 topTenClients <<- list()
 topTenServers <<- list()
 timestamps    <<- list()
@@ -26,9 +25,6 @@ reduce <- function(line) {
         }
         topTenClients <<- addValueHelper(datas[1], length, topTenClients)
         topTenServers <<- addValueHelper(datas[2], 1, topTenServers)
-        if (is.null(topTenClientsByServers[[datas[2]]]))
-            topTenClientsByServers[[datas[2]]] <<- list()
-        topTenClientsByServers[[datas[2]]] <<- addValueHelper(datas[1], length, topTenClientsByServers[[datas[2]]])
     }
 
     if (key == "timestamp") {
@@ -44,10 +40,6 @@ printStats <- function() {
     topTenSorted(topTenClients, "\ntopTenClients:\n")
     topTenSorted(topTenServers, "\ntopTenServers:\n")
 
-    cat("\nTopTen Clients by Servers: \n")
-    invisible(sapply(names(topTenClientsByServers), function(n) {
-            topTenSorted(topTenClientsByServers[[n]], paste("\nServer: ", n))
-        }))
     cat("\nPackets count every 5 minutes:\n")
     invisible(sapply(names(timestamps), function(n) {
             cat(n, timestamps[[n]], '\n', sep='\t')
