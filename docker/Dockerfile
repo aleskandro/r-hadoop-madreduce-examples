@@ -8,7 +8,7 @@ RUN rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noar
 RUN yum -y install R
 
 # Dev tools for R
-RUN yum -y install openssl-devel libcurl-devel libxml2-devel
+RUN yum -y install openssl-devel libcurl-devel libxml2-devel || true
 RUN R -e 'install.packages("devtools", repos="https://cran.stat.unipd.it/")'
 RUN R -e 'install.packages("roxygen2", repos="https://cran.stat.unipd.it/")'
 RUN R -e "devtools::install_github('klmr/modules')"
@@ -24,7 +24,7 @@ RUN R -e "devtools::install_github(c('RevolutionAnalytics/rmr2/pkg', 'Revolution
 ENV HADOOP_BIN=/usr/local/hadoop/bin/
 RUN R -e 'install.packages("datadr", repos="https://cran.stat.unipd.it/")'
 
-RUN yum install -y ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-compiler-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-debuginfo-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-devel-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-devel-2.5.0-16.1.x86_64.rpm 
+RUN yum install -y ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-compiler-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-debuginfo-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-devel-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-2.5.0-16.1.x86_64.rpm ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home:/kalyaka/CentOS_CentOS-6/x86_64/protobuf-lite-devel-2.5.0-16.1.x86_64.rpm  || true
 
 RUN curl http://ml.stat.purdue.edu/rhipebin/Rhipe_0.75.2_hadoop-2.tar.gz > /tmp/rhipe.tar.gz
 RUN R CMD INSTALL /tmp/rhipe.tar.gz
