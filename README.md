@@ -26,6 +26,9 @@ La scelta del salvataggio diretto su pdf e' dovuta all'utilizzo necessario di R 
 * klmr/modules (R)
 * roxygen2 (R)
 * linux-coreutils: (cat, less, sort... )
+
+o:
+
 * docker
 
 ## Running
