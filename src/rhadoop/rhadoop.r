@@ -87,7 +87,7 @@ reduceTimestamps <- function(vv) {
 
 mapper <- function(k, l) {
     myList  <- splitString(l, "\n")
-    packets <- lapply(myList, mapPackets)
+    packets <- mclapply(myList, mapPackets)
     packetsCount    <<- 0
     actualTimestamp <<- NA
 
