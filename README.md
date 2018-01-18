@@ -1,5 +1,7 @@
 ## R & Hadoop for data analysis with MapReduce
 
+Silvia Sottile - Alessandro Di Stefano
+
 ## TCPDump Logs
 
 L'elaborato implementa l'algoritmo MapReduce con Hadoop ed R.
